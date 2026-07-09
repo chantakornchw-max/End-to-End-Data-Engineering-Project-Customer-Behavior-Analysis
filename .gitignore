@@ -1,0 +1,11 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+2019-Oct.csv.gz
+*.csv
+prepare_data.py
+
+__pycache__/
+*.json
