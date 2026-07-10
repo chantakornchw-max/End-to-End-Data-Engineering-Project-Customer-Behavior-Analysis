@@ -103,6 +103,7 @@ jobs:
           gcloud compute ssh chantakorn_chw@ecommerce-airflow-vm-prod \
             --zone="us-east1-b" \
             --command="
+              mkdir -p ~/airflow/dags ~/airflow/logs ~/airflow/plugins && \
               gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/config/docker-compose.yml ~/airflow/ && \
               gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/dags/*.py ~/airflow/dags/ && \
               cd ~/airflow && \
