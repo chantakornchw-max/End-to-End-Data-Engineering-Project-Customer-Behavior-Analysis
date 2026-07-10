@@ -84,7 +84,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # 🌟 สเตปเพิ่มใหม่: ส่งพิมพ์เขียว docker-compose ขึ้นไปอัปเดตบน GCS
       - name: Upload Docker Compose Config to GCS
         run: |
           gcloud storage cp docker-compose.yml gs://ecommerce-customer-behavior-2026-prod/config/
@@ -97,15 +96,16 @@ jobs:
         run: |
           gcloud storage cp dags/*.py gs://ecommerce-customer-behavior-2026-prod/dags/
 
-      # 🌟 สเตปปรับปรุงใหม่: สั่งให้ VM ดึงไฟล์ล่าสุดทั้งสองตัว แล้วสั่งรันซ้ำแบบปลอดภัย (Idempotent)
       - name: Sync Config & DAGs to Airflow VM
         run: |
           gcloud compute ssh chantakorn_chw@ecommerce-airflow-vm-prod \
             --zone="us-east1-b" \
             --command="
+              cd ~ && sudo docker-compose down || true && \
               mkdir -p ~/airflow/dags ~/airflow/logs ~/airflow/plugins && \
+              sudo chown -R chantakorn_chw:chantakorn_chw ~/airflow && \
               gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/config/docker-compose.yml ~/airflow/ && \
-              gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/dags/*.py ~/airflow/dags/ && \
+              gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/dags/*.py ~/airflow/dags/ || true && \
               cd ~/airflow && \
               sudo docker-compose up -d
             " \
