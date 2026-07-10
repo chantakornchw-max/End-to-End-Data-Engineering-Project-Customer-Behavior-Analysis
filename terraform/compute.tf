@@ -6,6 +6,12 @@ resource "google_service_account" "composer_sa" {
   display_name = "Service Account for Airflow VM "
 }
 
+resource "google_project_iam_member" "airflow_vm_sa_editor" {
+  project = "modern-webbing-493413-r8" 
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.composer_sa.email}"
+}
+
 # =========================================================
 # Create Virtual Machine 
 # =========================================================
