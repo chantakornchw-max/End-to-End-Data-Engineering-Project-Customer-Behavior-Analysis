@@ -19,12 +19,25 @@ CLUSTER_NAME = "ecommerce-ephemeral-cluster"
 GCS_BUCKET = "ecommerce-customer-behavior-2026-prod" 
 DATASET_ID = "ecommerce_wh_prod"
 DB_HOST = Variable.get("db_host")
-DB_USER = Variable.get("db_user")
+DB_USERNAME = Variable.get("db_username")
 DB_PASSWORD = Variable.get("db_password")
 
 # ==========================================
 # Dataproc Configuration (Spark)
 # ==========================================
+# CLUSTER_CONFIG = {
+#     "master_config": {
+#         "num_instances": 1,
+#         "machine_type_uri": "n1-standard-2",
+#         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
+#     },
+#     "worker_config": {
+#         "num_instances": 2,
+#         "machine_type_uri": "n1-standard-2",
+#         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
+#     },
+# }
+
 CLUSTER_CONFIG = {
     "master_config": {
         "num_instances": 1,
@@ -32,10 +45,13 @@ CLUSTER_CONFIG = {
         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
     },
     "worker_config": {
-        "num_instances": 2,
-        "machine_type_uri": "n1-standard-2",
-        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
+        "num_instances": 0, # 🌟 ปิด Worker เพื่อประหยัดโควตา vCPUs 
     },
+    "software_config": {
+        "properties": {
+            "dataproc:dataproc.allow.zero.workers": "true" # 🌟 บังคับให้รันแบบเครื่องเดียวจบ
+        }
+    }
 }
 
 # ==========================================
@@ -74,7 +90,7 @@ with DAG(
             "placement": {"cluster_name": CLUSTER_NAME},
             "pyspark_job": {
                 "main_python_file_uri": f"gs://{GCS_BUCKET}/scripts/ingest_from_cloudsql_to_gcs.py",
-                "args": [DB_HOST, DB_USER, DB_PASSWORD, GCS_BUCKET] 
+                "args": [DB_HOST, DB_USERNAME, DB_PASSWORD, GCS_BUCKET] 
             },
         },
     )
