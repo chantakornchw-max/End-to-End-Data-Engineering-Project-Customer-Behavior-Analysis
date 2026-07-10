@@ -26,7 +26,7 @@ resource "google_project_iam_member" "composer_service_agent_v2ext" {
 # ==========================================
 resource "google_composer_environment" "ecommerce_airflow" {
   name   = "ecommerce-airflow-${var.environment}"
-  region = var.gcp_region
+  region = "us-east1"
 
   config {
     environment_size = "ENVIRONMENT_SIZE_SMALL"
