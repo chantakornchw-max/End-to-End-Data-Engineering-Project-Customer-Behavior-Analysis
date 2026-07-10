@@ -26,13 +26,34 @@ resource "google_project_iam_member" "composer_service_agent_v2ext" {
 # ==========================================
 resource "google_composer_environment" "ecommerce_airflow" {
   name   = "ecommerce-airflow-${var.environment}"
-  region = "us-east1"
+  region = "us-east1-b"
 
   config {
     environment_size = "ENVIRONMENT_SIZE_SMALL"
 
     node_config {
       service_account = google_service_account.composer_sa.email
+    }
+
+    workloads_config {
+      scheduler {
+        cpu        = 0.5
+        memory_gb  = 1.875
+        storage_gb = 1
+        count      = 1
+      }
+      web_server {
+        cpu        = 0.5
+        memory_gb  = 1.875
+        storage_gb = 1
+      }
+      worker {
+        cpu        = 0.5
+        memory_gb  = 1.875
+        storage_gb = 1
+        min_count  = 1
+        max_count  = 2  
+      }
     }
 
     software_config {
