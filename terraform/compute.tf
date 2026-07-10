@@ -11,10 +11,10 @@ resource "google_service_account" "composer_sa" {
 # =========================================================
 resource "google_compute_instance" "airflow_vm" {
   name         = "ecommerce-airflow-vm-${var.environment}"
-  machine_type = "e2-standard-2" # สเปค 2 vCPU, 8GB RAM (แรงพอสำหรับ LocalExecutor)
-  zone         = "us-east1-b"    # หนีโซน C ที่โควต้าเต็มมาอยู่โซน B แทน
+  machine_type = "e2-standard-2" 
+  zone         = "us-east1-b"    
 
-  tags = ["airflow-server"] # แปะป้ายให้ รปภ. (Firewall) รู้จัก
+  tags = ["airflow-server"] 
 
   boot_disk {
     initialize_params {
@@ -25,31 +25,39 @@ resource "google_compute_instance" "airflow_vm" {
 
   network_interface {
     network = "default"
-    access_config {
-      # เปิดไว้ว่างๆ เพื่อรับ Public IP
-    }
+    access_config {}
   }
 
-  # สคริปต์นี้เทียบเท่า user_data ของ AWS
-  # ลงเครื่องมือรอไว้ให้ แต่ "ไม่สั่งรัน" เพื่อรอให้กัปตันเข้ามาสั่งการเอง!
   metadata_startup_script = <<-EOF
     #!/bin/bash
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg git
 
-    # ติดตั้ง Docker และผองเพื่อน
+    # 1. ติดตั้ง Docker และ Docker Compose
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt-get update -y
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-    # สร้าง Alias ให้เราพิมพ์คำสั่ง docker-compose ได้ง่ายๆ
     ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/bin/docker-compose
+
+    # 2. เตรียมโฟลเดอร์สำหรับทำงานในเครื่องผู้ใช้ chantakorn_chw
+    USER_HOME="/home/chantakorn_chw"
+    mkdir -p $USER_HOME/airflow/dags $USER_HOME/airflow/logs $USER_HOME/airflow/plugins
+    
+    # 3. ดึงไฟล์ docker-compose.yaml ที่พักไว้ใน GCS ลงมาในเครื่อง VM
+    gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/config/docker-compose.yml $USER_HOME/airflow/docker-compose.yml
+
+    # 4. เปลี่ยนกรรมสิทธิ์โฟลเดอร์ให้เป็นของ Airflow (UID 50000) เพื่อป้องกัน Permission Denied
+    chown -R 50000:0 $USER_HOME/airflow/dags $USER_HOME/airflow/logs $USER_HOME/airflow/plugins
+    chown chantakorn_chw:chantakorn_chw $USER_HOME/airflow/docker-compose.yml
+
+    # 5. สั่งสตาร์ท Airflow ขึ้นมาทำงานทันทีในเบื้องหลัง!
+    cd $USER_HOME/airflow
+    sudo docker-compose up -d
   EOF
 
-  # ใช้ Service Account ของโปรเจกต์ เพื่อให้ Airflow คุยกับ BigQuery/GCS ได้
   service_account {
     email  = google_service_account.composer_sa.email
     scopes = ["cloud-platform"]

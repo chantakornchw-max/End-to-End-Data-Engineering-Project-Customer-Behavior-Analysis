@@ -52,8 +52,6 @@ jobs:
     name: "Terraform Deploy"
     runs-on: ubuntu-latest
     needs: code-validation 
-    outputs:
-      composer_dag_bucket: ${{ steps.tf_outputs.outputs.dag_bucket }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -67,17 +65,11 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
-      - name: Get Terraform Outputs
-        id: tf_outputs
-        run: |
-          cd terraform
-          echo "dag_bucket=$(terraform output -raw airflow_dag_gcs_prefix)" >> $GITHUB_OUTPUT
-
   # -----------------------------------------------------
   # STAGE 3: DAGS & SCRIPTS DEPLOYMENT (CD - GCP)
   # -----------------------------------------------------
   deploy-app:
-    name: "Deploy DAGs and PySpark Scripts to GCS"
+    name: "Deploy DAGs, Scripts, and Compose Config"
     runs-on: ubuntu-latest
     needs: deploy-infra 
     steps:
@@ -92,10 +84,28 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      # 🌟 สเตปเพิ่มใหม่: ส่งพิมพ์เขียว docker-compose ขึ้นไปอัปเดตบน GCS
+      - name: Upload Docker Compose Config to GCS
+        run: |
+          gcloud storage cp docker-compose.yml gs://ecommerce-customer-behavior-2026-prod/config/
+
       - name: Upload PySpark Scripts to GCS
         run: |
           gcloud storage cp scripts/*.py gs://ecommerce-customer-behavior-2026-prod/scripts/
 
-      - name: Upload DAGs to Cloud Composer
+      - name: Upload DAGs to GCS (Staging)
         run: |
-          gcloud storage cp dags/*.py ${{ needs.deploy-infra.outputs.composer_dag_bucket }}/
+          gcloud storage cp dags/*.py gs://ecommerce-customer-behavior-2026-prod/dags/
+
+      # 🌟 สเตปปรับปรุงใหม่: สั่งให้ VM ดึงไฟล์ล่าสุดทั้งสองตัว แล้วสั่งรันซ้ำแบบปลอดภัย (Idempotent)
+      - name: Sync Config & DAGs to Airflow VM
+        run: |
+          gcloud compute ssh chantakorn_chw@ecommerce-airflow-vm-prod \
+            --zone="us-east1-b" \
+            --command="
+              gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/config/docker-compose.yml ~/airflow/ && \
+              gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/dags/*.py ~/airflow/dags/ && \
+              cd ~/airflow && \
+              sudo docker-compose up -d
+            " \
+            --quiet
