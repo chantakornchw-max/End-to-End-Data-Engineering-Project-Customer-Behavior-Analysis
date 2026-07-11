@@ -41,7 +41,7 @@ DB_PASSWORD = Variable.get("db_password")
 CLUSTER_CONFIG = {
     "master_config": {
         "num_instances": 1,
-        "machine_type_uri": "n1-standard-2",
+        "machine_type_uri": "n1-standard-4",
         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
     },
     "worker_config": {
