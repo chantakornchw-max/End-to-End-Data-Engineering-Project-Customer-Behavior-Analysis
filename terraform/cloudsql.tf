@@ -17,7 +17,10 @@ resource "google_sql_database_instance" "postgres_instance" {
     }              
 
     ip_configuration {
-      ipv4_enabled = true                    
+      ipv4_enabled = true
+
+      private_network = "projects/modern-webbing-493413-r8/global/networks/default"
+
       authorized_networks {                  
         name  = "allow-all-for-testing"      
         value = "0.0.0.0/0"
