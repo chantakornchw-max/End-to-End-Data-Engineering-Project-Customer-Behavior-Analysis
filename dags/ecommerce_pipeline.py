@@ -45,12 +45,16 @@ CLUSTER_CONFIG = {
         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
     },
     "worker_config": {
-        "num_instances": 0, # 🌟 ปิด Worker เพื่อประหยัดโควตา vCPUs 
+        "num_instances": 0, 
     },
     "software_config": {
         "properties": {
-            "dataproc:dataproc.allow.zero.workers": "true" # 🌟 บังคับให้รันแบบเครื่องเดียวจบ
+            "dataproc:dataproc.allow.zero.workers": "true" 
         }
+    },
+    
+    "gce_cluster_config": {
+        "zone_uri": "asia-southeast1-b", 
     }
 }
 
