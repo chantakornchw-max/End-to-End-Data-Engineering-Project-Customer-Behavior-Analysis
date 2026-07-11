@@ -96,7 +96,7 @@ with DAG(
                 "main_python_file_uri": f"gs://{GCS_BUCKET}/scripts/ingest_from_cloudsql_to_gcs.py",
                 "args": [DB_HOST, DB_USERNAME, DB_PASSWORD, GCS_BUCKET],
                 "properties": {
-                    "spark.jars.packages": "org.postgresql:postgresql:42.6.0"
+                    "spark.jars": f"gs://{GCS_BUCKET}/jars/postgresql-42.6.0.jar"
                 }
             },
         },
