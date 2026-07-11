@@ -25,19 +25,6 @@ DB_PASSWORD = Variable.get("db_password")
 # ==========================================
 # Dataproc Configuration (Spark)
 # ==========================================
-# CLUSTER_CONFIG = {
-#     "master_config": {
-#         "num_instances": 1,
-#         "machine_type_uri": "n1-standard-2",
-#         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
-#     },
-#     "worker_config": {
-#         "num_instances": 2,
-#         "machine_type_uri": "n1-standard-2",
-#         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 30},
-#     },
-# }
-
 CLUSTER_CONFIG = {
     "master_config": {
         "num_instances": 1,
@@ -54,7 +41,7 @@ CLUSTER_CONFIG = {
     },
     
     "gce_cluster_config": {
-        "zone_uri": "asia-southeast1-b", 
+        "zone_uri": "asia-southeast1-c", 
     }
 }
 

@@ -16,7 +16,7 @@ variable "gcp_region" {
 variable "gcp_zone" {
   description = "The zone within the region"
   type        = string
-  default     = "asia-southeast1-a"
+  default     = "asia-southeast1-c"
 }
 
 # ==========================================

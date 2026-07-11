@@ -13,7 +13,7 @@ resource "google_sql_database_instance" "postgres_instance" {
     disk_type       = "PD_SSD" 
 
     location_preference {
-      zone = "asia-southeast1-c" 
+      zone = var.gcp_zone 
     }              
 
     ip_configuration {
