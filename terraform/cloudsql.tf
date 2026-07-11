@@ -10,7 +10,11 @@ resource "google_sql_database_instance" "postgres_instance" {
   settings {
     tier = "db-f1-micro"                    
     disk_autoresize = true                   
-    disk_type       = "PD_SSD"               
+    disk_type       = "PD_SSD" 
+
+    location_preference {
+      zone = "asia-southeast1-c" 
+    }              
 
     ip_configuration {
       ipv4_enabled = true                    
