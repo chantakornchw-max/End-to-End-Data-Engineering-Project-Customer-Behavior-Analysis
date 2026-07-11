@@ -94,7 +94,10 @@ with DAG(
             "placement": {"cluster_name": CLUSTER_NAME},
             "pyspark_job": {
                 "main_python_file_uri": f"gs://{GCS_BUCKET}/scripts/ingest_from_cloudsql_to_gcs.py",
-                "args": [DB_HOST, DB_USERNAME, DB_PASSWORD, GCS_BUCKET] 
+                "args": [DB_HOST, DB_USERNAME, DB_PASSWORD, GCS_BUCKET],
+                "properties": {
+                    "spark.jars.packages": "org.postgresql:postgresql:42.6.0"
+                }
             },
         },
     )
