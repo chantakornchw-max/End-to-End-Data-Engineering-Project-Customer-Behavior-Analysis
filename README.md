@@ -5,4 +5,4 @@
 ## Pipeline Architecture
 
 
-![Pipeline Architecture](./images/pipeline_arch.png)
+![Pipeline Architecture](./images/pipeline_arch1.png)
