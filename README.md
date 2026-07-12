@@ -4,4 +4,5 @@
 
 ## Pipeline Architecture
 
+
 ![Pipeline Architecture](./images/pipeline_arch.png)
