@@ -39,7 +39,7 @@ resource "google_compute_instance" "airflow_vm" {
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg git
 
-    # 1. ติดตั้ง Docker และ Docker Compose
+    # 1. Install Docker and Docker Compose
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
@@ -48,18 +48,18 @@ resource "google_compute_instance" "airflow_vm" {
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/bin/docker-compose
 
-    # 2. เตรียมโฟลเดอร์สำหรับทำงานในเครื่องผู้ใช้ chantakorn_chw
+    # 2. Prepare a working folder
     USER_HOME="/home/chantakorn_chw"
     mkdir -p $USER_HOME/airflow/dags $USER_HOME/airflow/logs $USER_HOME/airflow/plugins
     
-    # 3. ดึงไฟล์ docker-compose.yaml ที่พักไว้ใน GCS ลงมาในเครื่อง VM
+    # 3. Pull docker-compose.yaml from GCS and push to VM
     gcloud storage cp gs://ecommerce-customer-behavior-2026-prod/config/docker-compose.yml $USER_HOME/airflow/docker-compose.yml
 
-    # 4. เปลี่ยนกรรมสิทธิ์โฟลเดอร์ให้เป็นของ Airflow (UID 50000) เพื่อป้องกัน Permission Denied
+    # 4. Change folder ownership to Airflow (UID 50000) to prevent permission denied.
     chown -R 50000:0 $USER_HOME/airflow/dags $USER_HOME/airflow/logs $USER_HOME/airflow/plugins
     chown chantakorn_chw:chantakorn_chw $USER_HOME/airflow/docker-compose.yml
 
-    # 5. สั่งสตาร์ท Airflow ขึ้นมาทำงานทันทีในเบื้องหลัง!
+    # 5. Start Airflow 
     cd $USER_HOME/airflow
     sudo docker-compose up -d
   EOF
